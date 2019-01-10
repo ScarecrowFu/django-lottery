@@ -18,10 +18,11 @@ from django.urls import path
 from django.conf.urls.static import static
 from django.conf import settings
 from django.conf.urls import url, include
-from lottery.views import index
+from lottery.views import index, get_all_users
 
 urlpatterns = [
                   path('admin/', admin.site.urls),
                   url(r'^index/$', index, name='index'),  # 首页
+                  url(r'^get_all_users/$', get_all_users, name='get_all_users'),  # 首页
                   url(r'^$', index, name='index'),  # 首页
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

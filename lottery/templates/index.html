@@ -139,12 +139,24 @@
     <button class="pure-button" v-on="click: toggle" v-class=" button-secondary: !running, button-success: running  ">{{running }}</button>
     <button class="pure-button button-warning" v-on="click: reset">重置</button>
 </div>
+<script>         var csrftoken = '{{ csrf_token }}';     </script>
 <script type="text/javascript" src="{% static 'js/zepto.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/vue.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/tagcanvas.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/member.js' %}"></script>
 <script type="text/javascript">
     (function(){
+        $.ajax({
+            type: 'get',
+            url: '/get_all_users/',
+            data: {
+                'csrfmiddlewaretoken': csrftoken
+            },
+            async:false,//取消异步请求
+            success: function (data) {
+                console.log(data)
+            }
+        });
         var choosed = JSON.parse(localStorage.getItem('choosed')) || {};
         console.log(choosed);
         var speed = function(){
