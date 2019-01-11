@@ -8,144 +8,134 @@
     <title>年会抽奖小程序</title>
     <link rel="stylesheet" type="text/css" href="{% static 'css/reset.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/wall.css' %}">
-    <style type="text/css">
-        body, html {
-            width: 100%;
-            height: 100%;
-        }
-        .result {
-            position: absolute;
-            height: 320px;
-            width: 100%;
-            left: 0; top: 50%;
-            margin-top: -160px;
-            text-align: center;
-            padding: 10px;
-            display: none;
-        }
-        .result span {
-            display: inline-block;
-            font-size: 25px;
-            width: 150px;
-            background: #fff;
-            line-height: 30px;
-            color: #000;
-            margin: 5px;
-            border-radius: 10px;
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.8);
-            padding: 10px 0;
-        }
-        button, input, optgroup, select, textarea {
-            color: inherit;
-            font: inherit;
-            margin: 0;
-            border: none;
-        }
-        button {
-            overflow: visible;
-        }
-        button, select {
-            text-transform: none;
-        }
-        button, html input[type=button], input[type=reset], input[type=submit] {
-            -webkit-appearance: button;
-            cursor: pointer;
-        }
-        .pure-button {
-            display: inline-block;
-            zoom: 1;
-            line-height: normal;
-            white-space: nowrap;
-            vertical-align: middle;
-            text-align: center;
-            cursor: pointer;
-            -webkit-user-drag: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            -webkit-box-sizing: border-box;
-            -moz-box-sizing: border-box;
-            box-sizing: border-box;
-        }
-
-        .pure-button {
-            font-family: inherit;
-            font-size: 100%;
-            padding: .5em 1em;
-            color: #444;
-            color: rgba(0,0,0,.8);
-            border: 0 rgba(0,0,0,0);
-            background-color: #E6E6E6;
-            text-decoration: none;
-            border-radius: 2px;
-        }
-        .pure-button:focus {
-            outline: 0
-        }
-        .pure-button-hover, .pure-button:hover, .pure-button:focus {
-            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#1a000000', GradientType=0);
-            background-image: -webkit-gradient(linear,0 0,0 100%,from(transparent),color-stop(40%,rgba(0,0,0,.05)),to(rgba(0,0,0,.1)));
-            background-image: -webkit-linear-gradient(transparent,rgba(0,0,0,.05) 40%,rgba(0,0,0,.1));
-            background-image: -moz-linear-gradient(top,rgba(0,0,0,.05) 0,rgba(0,0,0,.1));
-            background-image: -o-linear-gradient(transparent,rgba(0,0,0,.05) 40%,rgba(0,0,0,.1));
-            background-image: linear-gradient(transparent,rgba(0,0,0,.05) 40%,rgba(0,0,0,.1));
-        }
-
-        .button-success, .button-error, .button-warning, .button-secondary {
-            color: white;
-            border-radius: 4px;
-            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
-        }
-        .button-success {
-            background: rgb(28, 184, 65);
-        }
-        .button-error {
-            background: rgb(202, 60, 60);
-        }
-        .button-warning {
-            background: rgb(223, 117, 20);
-        }
-        .button-secondary {
-            background: rgb(66, 184, 221);
-        }
-        .tools {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            text-align: center;
-        }
-        .tools .pure-button {
-            display: inline-block;
-            margin: 5px;
-            padding: 10px 0;
-            text-align: center;
-            width:50px;
-        }
-        .mask {
-            -webkit-filter:blur(5px);
-        }
-        #main {
-            -webkit-transition: all 1s;
-            transition: all 1s;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/index.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'layui-v2.4.5/layui/css/layui.css' %}">
+    <script>         var csrftoken = '{{ csrf_token }}';     </script>
+    <script type="text/javascript" src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'layui-v2.4.5/layui/layui.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/zepto.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/tagcanvas.js' %}"></script>
 </head>
 <body>
+
 <div id="main" class="wall"></div>
 <div id="result" class="result"></div>
 <div id="tools" class="tools">
-    <button v-on="click: onClick($value)" class="pure-button" v-class="button-error: selected == $value" v-repeat="btns">{{ value }}</button>
-    <button class="pure-button" v-on="click: toggle" v-class=" button-secondary: !running, button-success: running  ">{{running }}</button>
-    <button class="pure-button button-warning" v-on="click: reset">重置</button>
+    <form class="layui-form" action="">
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: yellow">奖项</span></label>
+                <div class="layui-input-inline">
+                    <select id="prize_class" name="prize_class" lay-verify="required" lay-search=""  lay-filter="prize_class">
+                        <option value="">请选择奖项</option>
+                        {% for prize_class in prize_classes %}
+                            <option value="{{ prize_class.id }}">{{ prize_class.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label"><span style="color: yellow">奖品</span></label>
+                <div class="layui-input-inline">
+                    <select id="prize" name="prize" lay-verify="required" lay-search="" lay-filter="prize">
+                        <option value="">请选择奖品</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+    </form>
+    <button id="lottery" name="lottery" class="pure-button" >抽奖</button>
+    <button id="reset" name="reset" class="pure-button button-warning">重置</button>
+    <button data-method="prizes" class="layui-btn">查看所有奖品</button>
+    <button data-method="lottery" class="layui-btn">中奖名单</button>
 </div>
-<script>         var csrftoken = '{{ csrf_token }}';     </script>
-<script type="text/javascript" src="{% static 'js/zepto.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/vue.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/tagcanvas.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/member.js' %}"></script>
+
+<div id="tools-2" class="tools-2">
+    <button data-method="blue_theme" class="layui-btn layui-btn-normal">深蓝主题</button>
+    <button data-method="new_year_theme" class="layui-btn layui-btn-warm">喜庆主题</button>
+</div>
+
 <script type="text/javascript">
-    (function(){
+    $(function () {
+        //一般直接写在一个js文件中
+        layui.use(['layer', 'form'], function(){
+            var layer = layui.layer
+                ,form = layui.form;
+            layer.msg('赛哲生物, 年会抽奖即将开始!');
+
+            //触发事件
+            var active = {
+                lottery: function(){
+                    // 所有中奖用户
+                    layer.open({
+                        type: 2
+                        ,title: '所有奖品'
+                        ,closeBtn: false
+                        ,area: ['80%', '80%']
+                        ,shade: 0
+                        ,id: 'lottery_id' //设定一个id，防止重复弹出
+                        ,btn: ['继续抽奖!', '我就看看!']
+                        ,moveType: 1 //拖拽模式，0或者1
+                        ,content: '{% url 'get_winner_users' %}'
+                    });
+                }
+                ,prizes: function(){
+                    // 所有奖品
+                    layer.open({
+                        type: 2
+                        ,title: '所有奖品'
+                        ,closeBtn: false
+                        ,area: ['80%', '80%']
+                        ,shade: 0
+                        ,id: 'prizes_id' //设定一个id，防止重复弹出
+                        ,btn: ['继续抽奖!', '我就看看!']
+                        ,moveType: 1 //拖拽模式，0或者1
+                        ,content: '{% url 'get_all_prizes' %}'
+                    });
+                },
+                blue_theme: function(){
+                    document.getElementById('main').style.backgroundImage="url({% static 'img/icon-wall.jpg' %})";
+                    {#$('body').css('background-image', 'url({% static 'img/icon-wall.jpg' %})');#}
+                },
+                new_year_theme: function(){
+                    document.getElementById('main').style.backgroundImage="url({% static 'img/icon-wall-2.jpg' %})";
+                    {#$('body').css('background-image', 'url({% static 'img/icon-wall-2.jpg' %})');#}
+                }
+            };
+
+            $('.layui-btn').on('click', function(){
+                var othis = $(this), method = othis.data('method');
+                active[method] ? active[method].call(this, othis) : '';
+            });
+
+            // 根据奖项取得奖品
+            form.on('select(prize_class)', function(data){
+                console.log(data.value);
+                var payload = {
+                    'prize_class_id': data.value,
+                    'csrfmiddlewaretoken': csrftoken
+                };
+                $.post("/get_prize_by_class/", payload, function (result) {
+                    $("#prize").html('<option value="">请选择奖品</option>');
+                    result.prizes.forEach(function(item, index){
+                        $("#prize").append("<option value=" + item.id + ">" + item.name + "("+ item.number +")人</option>")
+                    });
+                    form.render();
+                })
+            });
+
+            form.on('select(prize)', function(data){
+                console.log(data.value);
+
+            });
+
+        });
+
+
+        var member = []; // 初始化用户
         $.ajax({
             type: 'get',
             url: '/get_all_users/',
@@ -154,102 +144,113 @@
             },
             async:false,//取消异步请求
             success: function (data) {
-                console.log(data)
+                member = data.users
             }
         });
-        var choosed = JSON.parse(localStorage.getItem('choosed')) || {};
-        console.log(choosed);
-        var speed = function(){
-            return [0.1 * Math.random() + 0.01, -(0.1 * Math.random() + 0.01)];
-        };
-        var getKey = function(item){
-            return item.name + '-' + item.phone;
-        };
+
+        // 用户池
         var createHTML = function(){
             var html = [ '<ul>' ];
             member.forEach(function(item, index){
-                item.index = index;
-                var key = getKey(item);
-                var color = choosed[key] ? 'yellow' : 'white';
+                var color = 'yellow';
                 html.push('<li><a href="#" style="color: ' + color + ';">' + item.name + '</a></li>');
             });
             html.push('</ul>');
             return html.join('');
         };
-        var lottery = function(count){
-            var total = member.length;
-            var ret = [];
-            var list = canvas.getElementsByTagName('a');
-            var color = '#' + ('00000' + Math.floor(Math.random() * 0xffffff)).slice(-6);
-            var color = 'yellow';
-            for(var i = 0; i < count; i++){
-                do {
-                    var id = Math.ceil(Math.random() * total);
-                    if(member[id]){
-                        var key = getKey(member[id]);
-                    }
-                } while(choosed[key]);
-                choosed[key] = 1;
-                ret.push(member[id].name + '<br/>' + member[id].phone);
-                list[id].style.color = color;
-            }
-            localStorage.setItem('choosed', JSON.stringify(choosed));
-            return ret;
+
+        // 旋转速度
+        var speed = function(){
+            return [0.1 * Math.random() + 0.01, -(0.1 * Math.random() + 0.01)];
         };
+
+        // 初始化用户池
         var canvas = document.createElement('canvas');
         canvas.id = 'myCanvas';
         canvas.width = document.body.offsetWidth;
         canvas.height = document.body.offsetHeight;
         document.getElementById('main').appendChild(canvas);
-        new Vue({
-            el: '#tools',
-            data: {
-                selected: 30,
-                running: false,
-                btns: [
-                    30, 10, 5, 2, 1
-                ]
-            },
-            ready: function(){
-                canvas.innerHTML = createHTML();
-                TagCanvas.Start('myCanvas', '', {
-                    textColour: null,
-                    initial: speed(),
-                    dragControl: 1,
-                    textHeight: 14
-                });
-            },
-            methods: {
-                reset: function(){
-                    if(confirm('确定要重置么？所有之前的抽奖历史将被清除！')){
-                        localStorage.clear();
-                        location.reload(true);
-                    }
+
+        canvas.innerHTML = createHTML();
+
+        TagCanvas.Start('myCanvas', '', {
+            textColour: null,
+            initial: speed(),
+            dragControl: 1,
+            textHeight: 14
+        });
+
+        var getKey = function(item){
+            return item.name + '-' + item.group;
+        };
+
+        // 中奖用户
+        var lottery = function(winners){
+            var total = winners.length;
+            var ret = [];
+            for(var i = 0; i < total; i++){
+                ret.push(winners[i].name + '<br/>' + winners[i].group);
+            }
+            console.log('ret')
+            console.log(ret)
+            return ret;
+        };
+
+        $( "#lottery" ).click(function() {
+            var prize_class= $("#prize_class").val();
+            var prize = $("#prize").val();
+            if (!prize_class) {
+                layer.msg('请选择奖项!!');
+                return
+            }
+            if (!prize) {
+                layer.msg('请选择本轮抽取的奖品!!');
+                return
+            }
+
+            $.ajax({
+                type: 'post',
+                url: '/lottery/',
+                data: {
+                    'prize_class_id': prize_class,
+                    'prize_id': prize,
+                    'csrfmiddlewaretoken': csrftoken,
                 },
-                onClick: function(num){
-                    $('#result').css('display', 'none');
-                    $('#main').removeClass('mask');
-                    this.selected = num;
-                },
-                toggle: function(){
-                    if(this.running){
-                        TagCanvas.SetSpeed('myCanvas', speed());
-                        var ret = lottery(this.selected);
-                        $('#result').css('display', 'block').html('<span>' + ret.join('</span><span>') + '</span>');
-                        TagCanvas.Reload('myCanvas');
-                        setTimeout(function(){
-                            localStorage.setItem(new Date().toString(), JSON.stringify(ret));
-                            $('#main').addClass('mask');
-                        }, 300);
-                        console.log(ret);
-                    } else {
+                async:false,//取消异步请求
+                success: function (response) {
+                    if (response.success){
                         $('#result').css('display', 'none');
                         $('#main').removeClass('mask');
                         TagCanvas.SetSpeed('myCanvas', [5, 1]);
+
+                        layer.msg('正在抽奖!');
+                        setTimeout(function(){
+                            var winners = response.winners;
+                            console.log(winners)
+                            TagCanvas.SetSpeed('myCanvas', speed());
+                            var ret = lottery(winners);
+                            $('#result').css('display', 'block').html('<span>' + ret.join('</span><span>') + '</span>');
+                            TagCanvas.Reload('myCanvas');
+                            $('#main').addClass('mask');
+                            console.log(ret);
+                            layer.msg(response.messages);
+                        }, 3000);
                     }
-                    this.running = !this.running;
+                    else {
+                        layer.msg(response.messages);
+                    }
+
                 }
-            }
+            });
+        });
+
+        $( "#reset" ).click(function() {
+            var payload = {
+                'csrfmiddlewaretoken': csrftoken
+            };
+            $.post("/reset_all/", payload, function (response) {
+                layer.msg(response.messages);
+            })
         });
     })();
 </script>

@@ -38,7 +38,8 @@ class Prize(models.Model):
     prohibited_users = models.ManyToManyField(User, verbose_name="排除用户", blank=True, related_name='prohibited_users',
                                               help_text="排除用户, 该用户将不参与此奖品的抽奖")
     win_users = models.ManyToManyField(User, verbose_name="必中用户", blank=True, related_name='win_users',
-                                       help_text="必中用户. 该用户将必然中得此奖品")
+                                       help_text="必中用户. 该用户将必然中得此奖品, 排除用户与必中用户同时存在时, 该用户为必中用户")
+    is_exclude = models.BooleanField(default=True, verbose_name="是否排除已中奖用户", help_text="默认排除已中奖用户")
 
     def __str__(self):
         return self.name

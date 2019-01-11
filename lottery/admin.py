@@ -20,7 +20,7 @@ class UserAdmin(ImportExportModelAdmin):
 
 class PrizeAdmin(admin.ModelAdmin):
     filter_horizontal = ('prohibited_users', 'win_users')
-    list_display = ('name', 'prize_class', 'number', )
+    list_display = ('name', 'prize_class', 'number', 'is_exclude')
     search_fields = ('name', 'prize_class',  'number',)
 
 

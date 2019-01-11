@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" type="text/css" href="{% static 'layui-v2.4.5/layui/css/layui.css' %}">
+    <style type="text/css">
+        div.item {
+            vertical-align: top;
+            display: inline-block;
+            text-align: center;
+            width: 120px;
+        }
+        img {
+            width: 100px;
+            height: 100px;
+            background-color: grey;
+        }
+        .caption {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+{% for class, prize in prizes.items %}
+    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">
+        <legend>{{ class }}</legend>
+    </fieldset>
+    <div id="LAY_{{ class }}">
+        {%  for p in prize %}
+            <div class="item">
+                <img src="{{ p.img }}"/>
+                <span class="caption">{{ p.name }} ({{ p.number }}人)</span>
+            </div>
+        {% endfor %}
+
+    </div>
+{% endfor %}
+
+
+<script type="text/javascript" src="{% static 'layui-v2.4.5/layui/layui.js' %}"></script>
+
+<script>
+    layui.use('flow', function(){
+        var flow = layui.flow;
+
+        {% for class, prize in prizes.items %}
+            //按屏加载图片
+            flow.lazyimg({
+                elem: '#LAY_{{ class }}'
+                ,scrollElem: '#LAY_demo3' //一般不用设置，此处只是演示需要。
+            });
+        {% endfor %}
+
+    });
+</script>
+
+</body>
+</html>
