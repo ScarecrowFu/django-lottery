@@ -14,7 +14,7 @@ class UserResource(resources.ModelResource):
 
 class UserAdmin(ImportExportModelAdmin):
     resource_class = UserResource
-    list_display = ('serial_number', 'name', 'group', 'weights')
+    list_display = ('name', 'group', 'weights', 'serial_number')
     search_fields = ('serial_number', 'name', 'group', 'weights')
 
 

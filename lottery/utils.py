@@ -67,8 +67,8 @@ class OPRedis(object):
         self.coon.sadd(key, item)  # 添加新元素到队列最右方
 
     def get_all(self, key):
-        item = self.coon.smembers(key)
-        return item
+        items = self.coon.smembers(key)
+        return set([int(item) for item in items])
 
     def get(self, key):
         # 直接返回队列第一个元素，如果队列为空返回的是None
@@ -80,6 +80,7 @@ obj_redis = OPRedis()
 
 
 def lottery_method(all_user_ids):
+    random.shuffle(all_user_ids)  # 打乱数组顺序
     # 生成抽奖用户
     all_users_with_weights = {}
     for user_id in all_user_ids:

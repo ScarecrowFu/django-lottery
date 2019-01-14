@@ -5,7 +5,7 @@ from lottery.models import User, PrizeClass, Prize
 from collections import defaultdict
 from lottery.utils import obj_redis, lottery_method
 import random
-
+import numpy as np
 
 def index(req):
     # 首页初始化
@@ -71,6 +71,9 @@ def lottery(req):
             all_winner_ids = obj_redis.get_all('all_winner_ids')  # 所有已中奖人(ID)
             winner_ids = obj_redis.get_all(prize.id)  # 当前奖项已中奖用户(ID)
             win_number = prize.number  # 可中奖人数
+            print("所有已中奖用户ID:{}".format(all_winner_ids))
+            print("当前奖项已中奖用户ID:{}".format(winner_ids))
+            print("当前奖项可中奖用户数:{}".format(win_number))
             if not all_winner_ids:
                 all_winner_ids = set()
             if not winner_ids:
@@ -90,7 +93,7 @@ def lottery(req):
                                     content_type="application/json")
             else:
                 win_number = win_number - len(winners)  # 可中奖人数=最大可中奖人数-此奖项已中奖人数
-                print(win_number)
+                print("确认后已中奖人数后,当前奖项可中奖用户数:{}".format(win_number))
                 # 排除用户
                 prohibited_user_ids = [user.id for user in prize.prohibited_users.all()]  # 需要排除的用户
                 for prohibited_user_id in prohibited_user_ids:
@@ -107,13 +110,13 @@ def lottery(req):
                     obj_redis.put(prize.id, winner_user.id)
                 if prize.is_exclude:
                     all_user_ids = list(filter(lambda x: x not in all_winner_ids, all_user_ids))  # 排除所有已中奖用户
-                print(prohibited_user_ids)
-                print(all_winner_ids)
-                print(winners)
-                print(all_user_ids)
 
                 win_number = win_number - len(winners)  # 剩余可中奖人数=最大可中奖人数 - 此奖项已中奖人数
-                print(win_number)
+                print("需要排除的用户ID:{}".format(prohibited_user_ids))
+                print("所有已中奖的用户ID:{}".format(all_winner_ids))
+                print("当前奖项已中奖用户:{}".format(winners))
+                print("参与抽奖的用户ID:{}".format(all_user_ids))
+                print("添加中奖用户后, 剩余可中奖人数:{}".format(win_number))
 
                 # 抽奖
                 for _ in range(win_number):
@@ -168,3 +171,14 @@ def reset_all(req):
     obj_redis.flushdb()
     return HttpResponse(json.dumps({"success": True, "messages": '重置所有获奖结果!'}),
                         content_type="application/json")
+
+
+def reset_by_prize(req):
+    prize_id = req.POST.get('prize_id', False)
+    if prize_id:
+        obj_redis.delRedis(int(prize_id))
+        return HttpResponse(json.dumps({"success": True, "messages": '重置获奖结果!'}),
+                            content_type="application/json")
+    else:
+        return HttpResponse(json.dumps({"success": False, "messages": '当前奖品不存在!'}),
+                            content_type="application/json")

@@ -60,6 +60,12 @@
 
 <script type="text/javascript">
     $(function () {
+
+        $(document).keypress(function (e) {
+            $('#result').css('display', 'none');
+            $('#main').removeClass('mask');
+        });
+
         //一般直接写在一个js文件中
         layui.use(['layer', 'form'], function(){
             var layer = layui.layer
@@ -133,6 +139,16 @@
             });
 
         });
+
+        if ($("#prize_class").val()) {
+            $.post("/get_prize_by_class/", {'prize_class_id': $("#prize_class").val(), 'csrfmiddlewaretoken': csrftoken}, function (result) {
+                $("#prize").html('<option value="">请选择奖品</option>');
+                result.prizes.forEach(function(item, index){
+                    $("#prize").append("<option value=" + item.id + ">" + item.name + "("+ item.number +")人</option>")
+                });
+                form.render();
+            })
+        }
 
 
         var member = []; // 初始化用户
@@ -245,12 +261,21 @@
         });
 
         $( "#reset" ).click(function() {
-            var payload = {
-                'csrfmiddlewaretoken': csrftoken
-            };
-            $.post("/reset_all/", payload, function (response) {
-                layer.msg(response.messages);
-            })
+            layer.confirm('是否确定要重置所有抽奖数据？', {
+                btn: ['确定', '按错了'] //可以无限个按钮
+            }, function(index){
+                var payload = {
+                    'csrfmiddlewaretoken': csrftoken
+                };
+                $.post("/reset_all/", payload, function (response) {
+                    layer.msg(response.messages);
+                })
+            }, function(index){
+                layer.msg("继续抽奖!");
+            });
+
+
+
         });
     })();
 </script>

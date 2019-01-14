@@ -7,7 +7,7 @@ class User(models.Model):
     serial_number = models.CharField(max_length=255, null=True, blank=True, verbose_name="编号", help_text='可空')
     name = models.CharField(max_length=255, verbose_name="姓名")
     group = models.CharField(max_length=255, null=True, blank=True, verbose_name="部门")
-    weights = models.IntegerField(default=0, verbose_name="权重", help_text="权重为0-100, 权重越高, 中奖机会越高, 0为公平参与, 100为必中")
+    weights = models.IntegerField(default=0, verbose_name="权重", help_text="权重为0-100, 权重越高, 中奖机会越高")
 
     def __str__(self):
         return self.name

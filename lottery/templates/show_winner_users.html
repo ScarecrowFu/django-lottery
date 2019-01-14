@@ -36,22 +36,6 @@
 <body>
 
 {% for class, prizes in winner_users.items %}
-    {#    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">#}
-    {#        <legend>{{ class }}</legend>#}
-    {#    </fieldset>#}
-    {#    <div id="LAY_{{ class }}">#}
-    {#        {%  for prize in prizes %}#}
-    {#            <fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">#}
-    {#                <img src="{{ prize.img }}"/>#}
-    {#                <span class="caption">{{ prize.name }} ({{ prize.number }}人)</span>#}
-    {#            </fieldset>#}
-    {##}
-    {#            {% for user in prize.users %}#}
-    {#                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#}
-    {#                <button class="caption layui-btn layui-btn-danger">{{ user.name }}({{ user.group }})</button>#}
-    {#            {% endfor %}#}
-    {#        {% endfor %}#}
-    {#    </div>#}
     <fieldset class="layui-elem-field layui-field-title site-demo-button" style="margin-top: 30px;">
         <legend>{{ class }}</legend>
     </fieldset>
@@ -59,9 +43,14 @@
         <div class="site-demo-button" id="layerDemo" style="margin-bottom: 0;">
             <blockquote class="layui-elem-quote layui-quote-nm">
                 <img src="{{ prize.img }}"/> {{ prize.name }}
+                {% if prize.users %}
+                    <button id="reset_by_prize" name="reset_by_prize" data-id="{{ prize.id }}" class="layui-btn layui-btn-danger layui-btn-radius layui-btn-sm ">重置中奖用户</button>
+                {% else %}
+                    <button data-method="offset" class="layui-btn layui-btn-warm layui-btn-radius layui-btn-sm ">未抽奖</button>
+                {% endif %}
             </blockquote>
             {% if not prize.users %}
-                <button data-method="offset" class="layui-btn layui-btn-warm">未抽奖</button>
+                <br><br><br>
             {% else %}
                 {% for user in prize.users %}
                     <button data-method="offset" class="layui-btn layui-btn-normal">{{ user.name }}({{ user.group }})</button>
@@ -77,21 +66,41 @@
 
 
 {% endfor %}
-
-
+<script>         var csrftoken = '{{ csrf_token }}';     </script>
+<script type="text/javascript" src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'layui-v2.4.5/layui/layui.js' %}"></script>
 
 <script>
-    layui.use('flow', function(){
+    layui.use(['layer', 'flow'], function(){
         var flow = layui.flow;
+         var layer = layui.layer;
+{#        {% for class, prize in prizes.items %}#}
+{#            //按屏加载图片#}
+{#            flow.lazyimg({#}
+{#                elem: '#LAY_{{ class }}'#}
+{#                ,scrollElem: '#LAY_demo3' //一般不用设置#}
+{#            });#}
+{#        {% endfor %}#}
 
-        {% for class, prize in prizes.items %}
-            //按屏加载图片
-            flow.lazyimg({
-                elem: '#LAY_{{ class }}'
-                ,scrollElem: '#LAY_demo3' //一般不用设置，此处只是演示需要。
+        $( "#reset_by_prize" ).click(function() {
+            var prize_id = $(this).data('id');
+            layer.confirm('是否确定要重置当前奖品的抽奖数据？', {
+                btn: ['确定', '按错了'] //可以无限个按钮
+            }, function(data){
+
+                var payload = {
+                    'prize_id': prize_id,
+                    'csrfmiddlewaretoken': csrftoken
+                };
+                $.post("/reset_by_prize/", payload, function (response) {
+                    layer.msg(response.messages);
+                    location.reload();
+                })
+            }, function(index){
+                layer.msg("取消!");
             });
-        {% endfor %}
+
+        });
 
     });
 </script>
