@@ -18,7 +18,8 @@ from django.urls import path
 from django.conf.urls.static import static
 from django.conf import settings
 from django.conf.urls import url, include
-from lottery.views import index, get_all_users, get_prize_by_class, get_all_prizes, lottery, get_winner_users, reset_all, reset_by_prize
+from lottery.views import index, get_all_users, get_prize_by_class, get_all_prizes, lottery, \
+    get_winner_users, reset_all, reset_by_prize, get_all_losers, can_lottery, get_specify_prize, other_lottery
 
 urlpatterns = [
                   path('admin/', admin.site.urls),
@@ -30,5 +31,9 @@ urlpatterns = [
                   url(r'^get_winner_users/$', get_winner_users, name='get_winner_users'),
                   url(r'^reset_all/$', reset_all, name='reset_all'),
                   url(r'^reset_by_prize/$', reset_by_prize, name='reset_by_prize'),
+                  url(r'^get_all_losers/$', get_all_losers, name='get_all_losers'),
+                  url(r'^can_lottery/$', can_lottery, name='can_lottery'),
+                  url(r'^get_specify_prize/$', get_specify_prize, name='get_specify_prize'),
+                  url(r'^other_lottery/$', other_lottery, name='other_lottery'),
                   url(r'^$', index, name='index'),  # 首页
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

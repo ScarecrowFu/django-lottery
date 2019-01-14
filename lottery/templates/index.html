@@ -21,7 +21,10 @@
 <div id="main" class="wall"></div>
 <div id="result" class="result"></div>
 <div id="tools" class="tools">
-    <form class="layui-form" action="">
+    <div class="layui-anim layui-anim-up"><button id="lottery" name="lottery" class="layui-btn layui-btn-lg layui-btn-danger layui-btn-radius" >抽奖</button></div>
+
+    <br/><br/><br/><br/><br/><br/>
+    <form class="layui-form">
         <div class="layui-form-item">
             <div class="layui-inline">
                 <label class="layui-form-label"><span style="color: yellow">奖项</span></label>
@@ -31,12 +34,13 @@
                         {% for prize_class in prize_classes %}
                             <option value="{{ prize_class.id }}">{{ prize_class.name }}</option>
                         {% endfor %}
+                        <option value="other">其他</option>
                     </select>
                 </div>
             </div>
         </div>
         <div class="layui-form-item">
-            <div class="layui-inline">
+            <div id="prize_div" class="layui-inline">
                 <label class="layui-form-label"><span style="color: yellow">奖品</span></label>
                 <div class="layui-input-inline">
                     <select id="prize" name="prize" lay-verify="required" lay-search="" lay-filter="prize">
@@ -44,26 +48,59 @@
                     </select>
                 </div>
             </div>
+
+            <div id="number_div" name="number" class="layui-inline">
+                <label class="layui-form-label"><span style="color: yellow">人数</span></label>
+                <div class="layui-input-inline">
+                    <input type="number" id="user_number" name="user_number" lay-verify="user_number" autocomplete="off" placeholder="请输入人数" class="layui-input">
+                </div>
+            </div>
         </div>
 
     </form>
-    <button id="lottery" name="lottery" class="pure-button" >抽奖</button>
-    <button id="reset" name="reset" class="pure-button button-warning">重置</button>
-    <button data-method="prizes" class="layui-btn">查看所有奖品</button>
-    <button data-method="lottery" class="layui-btn">中奖名单</button>
+
+    <button id="reset" name="reset" class="layui-btn layui-btn-xs layui-btn-normal">重置</button>
+    <button data-method="prizes" class="layui-btn layui-btn-xs layui-btn-normal">查看所有奖品</button>
+    <button data-method="lottery" class="layui-btn layui-btn-xs layui-btn-normal">中奖名单</button>
 </div>
 
 <div id="tools-2" class="tools-2">
-    <button data-method="blue_theme" class="layui-btn layui-btn-normal">深蓝主题</button>
-    <button data-method="new_year_theme" class="layui-btn layui-btn-warm">喜庆主题</button>
+    <div id="show_prize" class="layui-form-item">
+        <div class="layui-inline">
+            <label class="layui-form-label"><span style="color: yellow"></span></label>
+            <div class="layui-input-inline">
+                <img id="prize_img" style="height: 100%; width: 100%" src="">
+            </div>
+        </div>
+    </div>
+
+    <div id="show_prize_font" class="layui-form-item">
+        <div class="layui-inline">
+            <label class="layui-form-label"><span style="color: yellow"></span></label>
+            <div class="layui-input-inline">
+                <p id="prize_class_font" style="color: #FFDF85; font-size: x-large"></p>
+                <br>
+                <p id="prize_font" style="color: #FFDF85; font-size: x-large"></p>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script type="text/javascript">
     $(function () {
 
         $(document).keypress(function (e) {
-            $('#result').css('display', 'none');
-            $('#main').removeClass('mask');
+            if (e.keyCode === 27) {
+                $('#result').css('display', 'none');
+                $('#main').removeClass('mask');
+            }
+        });
+
+        $(document.body).click(function(e){
+            if(e.target.id === 'result'){
+                $('#result').css('display', 'none');
+                $('#main').removeClass('mask');
+            }
         });
 
         //一般直接写在一个js文件中
@@ -120,6 +157,21 @@
             // 根据奖项取得奖品
             form.on('select(prize_class)', function(data){
                 console.log(data.value);
+                $("#show_prize").hide();
+                $("#show_prize_font").hide();
+                if (data.value === 'other'){
+                    $("#prize_div").hide();
+                    $("#number_div").show();
+                }else {
+                    $("#prize_div").show();
+                    $("#number_div").hide();
+                }
+                if ($("#prize_class").val() === 'other'){
+                    $("#show_prize_font").show();
+                    $("#prize_class_font").text('其他奖项');
+                    $("#prize_font").text('');
+                }
+
                 var payload = {
                     'prize_class_id': data.value,
                     'csrfmiddlewaretoken': csrftoken
@@ -127,48 +179,104 @@
                 $.post("/get_prize_by_class/", payload, function (result) {
                     $("#prize").html('<option value="">请选择奖品</option>');
                     result.prizes.forEach(function(item, index){
-                        $("#prize").append("<option value=" + item.id + ">" + item.name + "("+ item.number +")人</option>")
+                        $("#prize").append("<option value=" + item.id + " data-img="+ item.img +">" + item.name + "("+ item.number +")人</option>")
                     });
                     form.render();
                 })
             });
 
             form.on('select(prize)', function(data){
+                $("#show_prize").show();
+                $("#show_prize_font").show();
                 console.log(data.value);
+                var payload = {
+                    'prize_id': data.value,
+                    'csrfmiddlewaretoken': csrftoken
+                };
+                $.post("/get_specify_prize/", payload, function (result) {
+                    $("#prize_img").attr("src", result.prize.img);
+                    $("#prize_class_font").text(result.prize.class);
+                    $("#prize_font").text(result.prize.name);
+                })
+
 
             });
 
         });
 
+        var member = []; // 初始化用户
+        var running = false; // 是否正在抽奖
+        var textHeight = 25; // 用户池大小
+        $("#prize_div").show();
+        $("#number_div").hide();
+        $("#show_prize").hide();
+        $("#show_prize_font").hide();
+
         if ($("#prize_class").val()) {
-            $.post("/get_prize_by_class/", {'prize_class_id': $("#prize_class").val(), 'csrfmiddlewaretoken': csrftoken}, function (result) {
-                $("#prize").html('<option value="">请选择奖品</option>');
-                result.prizes.forEach(function(item, index){
-                    $("#prize").append("<option value=" + item.id + ">" + item.name + "("+ item.number +")人</option>")
-                });
-                form.render();
-            })
+            if ($("#prize_class").val() === 'other'){
+                $("#prize_div").hide();
+                $("#number_div").show();
+                $("#show_prize").hide();
+                $("#show_prize_font").show();
+                $("#prize_class_font").text('其他奖项');
+                var user_number = $("#user_number").val();
+                if (user_number) {
+                    $("#prize_font").text('抽奖人数:' + user_number);
+                }
+            }else {
+                $("#prize_div").show();
+                $("#number_div").hide();
+                $.post("/get_prize_by_class/", {'prize_class_id': $("#prize_class").val(), 'csrfmiddlewaretoken': csrftoken}, function (result) {
+                    $("#prize").html('<option value="">请选择奖品</option>');
+                    result.prizes.forEach(function(item, index){
+                        $("#prize").append("<option value=" + item.id + ">" + item.name + "("+ item.number +")人</option>")
+                    });
+                    form.render();
+                })
+
+                if ($("#prize").val()) {
+                    $("#show_prize").show();
+                    $("#show_prize_font").show();
+                    var payload = {
+                        'prize_id': $("#prize").val(),
+                        'csrfmiddlewaretoken': csrftoken
+                    };
+                    $.post("/get_specify_prize/", payload, function (result) {
+                        $("#prize_img").attr("src", result.prize.img);
+                        $("#prize_class_font").text(result.prize.class);
+                        $("#prize_font").text(result.prize.name);
+                    })
+                }
+                else {
+                    $("#show_prize").hide();
+                    $("#show_prize_font").hide();
+                }
+
+            }
+
         }
 
 
-        var member = []; // 初始化用户
-        $.ajax({
-            type: 'get',
-            url: '/get_all_users/',
-            data: {
-                'csrfmiddlewaretoken': csrftoken
-            },
-            async:false,//取消异步请求
-            success: function (data) {
-                member = data.users
-            }
+        $("#user_number").bind("keyup change", function(e) {
+            $("#prize_font").text('抽奖人数:' + this.value);
         });
 
         // 用户池
         var createHTML = function(){
+            $.ajax({
+                type: 'get',
+                url: '/get_all_users/',
+                data: {
+                    'csrfmiddlewaretoken': csrftoken
+                },
+                async:false,//取消异步请求
+                success: function (data) {
+                    member = data.users
+                }
+            });
             var html = [ '<ul>' ];
             member.forEach(function(item, index){
-                var color = 'yellow';
+                var color = item.color;
                 html.push('<li><a href="#" style="color: ' + color + ';">' + item.name + '</a></li>');
             });
             html.push('</ul>');
@@ -193,7 +301,7 @@
             textColour: null,
             initial: speed(),
             dragControl: 1,
-            textHeight: 14
+            textHeight: textHeight
         });
 
         var getKey = function(item){
@@ -215,49 +323,174 @@
         $( "#lottery" ).click(function() {
             var prize_class= $("#prize_class").val();
             var prize = $("#prize").val();
+            var user_number = $("#user_number").val();
+            var that = $(this);
+            var is_break = false;
             if (!prize_class) {
                 layer.msg('请选择奖项!!');
                 return
             }
-            if (!prize) {
-                layer.msg('请选择本轮抽取的奖品!!');
-                return
+            if (prize_class === 'other') {
+                if (!user_number) {
+                    layer.msg('请填入抽奖人数!!');
+                    return
+                }
+
+
+                if (running) {
+                    $.ajax({
+                        type: 'post',
+                        url: '/other_lottery/',
+                        data: {
+                            'user_number': user_number,
+                            'csrfmiddlewaretoken': csrftoken,
+                        },
+                        async:false,//取消异步请求
+                        success: function (response) {
+                            if (response.success){
+                                var winners = response.winners;
+                                console.log(winners);
+                                TagCanvas.SetSpeed('myCanvas', speed());
+                                var ret = lottery(winners);
+
+                                var html = [ '' ];
+                                ret.forEach(function(item, index){
+                                    html.push('<span>' + item + '</span>');
+                                    if((index+1) >0 && (index+1) % 5===0){
+                                        html.push('<br/>');
+                                    }
+                                });
+                                {#$('#result').css('display', 'block').html('<span>' + ret.join('</span><span>') + '</span>');#}
+                                $('#result').css('display', 'block').html(html.join(''));
+
+                                TagCanvas.Reload('myCanvas');
+                                $('#main').addClass('mask');
+                                console.log(ret);
+                                layer.msg(response.messages);
+                                running = false;
+                                that.text('抽奖');
+
+                                // 刷新用户池
+                                canvas.innerHTML = createHTML();
+                                TagCanvas.Start('myCanvas', '', {
+                                    textColour: null,
+                                    initial: speed(),
+                                    dragControl: 1,
+                                    textHeight: textHeight
+                                });
+                            }
+                            else {
+                                running = false;
+                                that.text('抽奖');
+                                TagCanvas.SetSpeed('myCanvas', speed());
+                                layer.msg(response.messages);
+                                $('#result').css('display', 'none');
+                                $('#main').removeClass('mask');
+                                TagCanvas.Reload('myCanvas');
+                            }
+                        }
+                    });
+                }else {
+                    layer.msg('进行抽奖!');
+                    $('#result').css('display', 'none');
+                    $('#main').removeClass('mask');
+                    TagCanvas.SetSpeed('myCanvas', [5, 1]);
+                    running = true;
+                    that.text('停止');
+                }
+
+            }else {
+                if (!prize) {
+                    layer.msg('请选择本轮抽取的奖品!!');
+                    return
+                }
+
+                // 判断是否可以抽奖, 已抽奖时不能再进行抽奖
+                $.ajax({
+                    type: 'post',
+                    url: '/can_lottery/',
+                    data: {
+                        'prize_id': $("#prize").val(),
+                        'csrfmiddlewaretoken': csrftoken
+                    },
+                    async:false,//取消异步请求
+                    success: function (data) {
+                        if (!data.success){
+                            layer.msg(data.messages);
+                            is_break = true
+                        }
+                    }
+                });
+
+                if (is_break) {
+                    return
+                }
+
+                if (running) {
+                    $.ajax({
+                        type: 'post',
+                        url: '/lottery/',
+                        data: {
+                            'prize_class_id': prize_class,
+                            'prize_id': prize,
+                            'csrfmiddlewaretoken': csrftoken,
+                        },
+                        async:false,//取消异步请求
+                        success: function (response) {
+                            if (response.success){
+                                var winners = response.winners;
+                                console.log(winners);
+                                TagCanvas.SetSpeed('myCanvas', speed());
+                                var ret = lottery(winners);
+
+                                var html = [ '' ];
+                                ret.forEach(function(item, index){
+                                    html.push('<span>' + item + '</span>');
+                                    if((index+1) >0 && (index+1) % 5===0){
+                                        html.push('<br/>');
+                                    }
+                                });
+                                {#$('#result').css('display', 'block').html('<span>' + ret.join('</span><span>') + '</span>');#}
+                                $('#result').css('display', 'block').html(html.join(''));
+
+                                TagCanvas.Reload('myCanvas');
+                                $('#main').addClass('mask');
+                                console.log(ret);
+                                layer.msg(response.messages);
+                                running = false;
+                                that.text('抽奖');
+
+                                // 刷新用户池
+                                canvas.innerHTML = createHTML();
+                                TagCanvas.Start('myCanvas', '', {
+                                    textColour: null,
+                                    initial: speed(),
+                                    dragControl: 1,
+                                    textHeight: textHeight
+                                });
+                            }
+                            else {
+                                running = false;
+                                that.text('抽奖');
+                                TagCanvas.SetSpeed('myCanvas', speed());
+                                layer.msg(response.messages);
+                                $('#result').css('display', 'none');
+                                $('#main').removeClass('mask');
+                                TagCanvas.Reload('myCanvas');
+                            }
+                        }
+                    });
+                }else {
+                    layer.msg('进行抽奖!');
+                    $('#result').css('display', 'none');
+                    $('#main').removeClass('mask');
+                    TagCanvas.SetSpeed('myCanvas', [5, 1]);
+                    running = true;
+                    that.text('停止');
+                }
             }
 
-            $.ajax({
-                type: 'post',
-                url: '/lottery/',
-                data: {
-                    'prize_class_id': prize_class,
-                    'prize_id': prize,
-                    'csrfmiddlewaretoken': csrftoken,
-                },
-                async:false,//取消异步请求
-                success: function (response) {
-                    if (response.success){
-                        $('#result').css('display', 'none');
-                        $('#main').removeClass('mask');
-                        TagCanvas.SetSpeed('myCanvas', [5, 1]);
 
-                        layer.msg('正在抽奖!');
-                        setTimeout(function(){
-                            var winners = response.winners;
-                            console.log(winners)
-                            TagCanvas.SetSpeed('myCanvas', speed());
-                            var ret = lottery(winners);
-                            $('#result').css('display', 'block').html('<span>' + ret.join('</span><span>') + '</span>');
-                            TagCanvas.Reload('myCanvas');
-                            $('#main').addClass('mask');
-                            console.log(ret);
-                            layer.msg(response.messages);
-                        }, 3000);
-                    }
-                    else {
-                        layer.msg(response.messages);
-                    }
-
-                }
-            });
         });
 
         $( "#reset" ).click(function() {
@@ -270,6 +503,15 @@
                 $.post("/reset_all/", payload, function (response) {
                     layer.msg(response.messages);
                 })
+
+                // 刷新用户池
+                canvas.innerHTML = createHTML();
+                TagCanvas.Start('myCanvas', '', {
+                    textColour: null,
+                    initial: speed(),
+                    dragControl: 1,
+                    textHeight: textHeight
+                });
             }, function(index){
                 layer.msg("继续抽奖!");
             });

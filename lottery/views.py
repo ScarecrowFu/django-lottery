@@ -4,8 +4,10 @@ import json
 from lottery.models import User, PrizeClass, Prize
 from collections import defaultdict
 from lottery.utils import obj_redis, lottery_method
+from django.views.decorators.csrf import csrf_exempt
 import random
 import numpy as np
+
 
 def index(req):
     # 首页初始化
@@ -20,8 +22,13 @@ def index(req):
 def get_all_users(req):
     # 取得所有参与抽奖的用户
     users = []
+    all_winner_ids = obj_redis.get_all('all_winner_ids')  # 所有已中奖人(ID)
     for user in User.objects.all():
-        users.append({'id': user.id, 'name': user.name, 'serial_number': user.serial_number, 'group': user.group})
+        if user.id in all_winner_ids:
+            color = 'red'
+        else:
+            color = '#FFDF85'
+        users.append({'id': user.id, 'name': user.name, 'serial_number': user.serial_number, 'group': user.group, 'color': color})
     return HttpResponse(json.dumps({"success": True, "users": users}), content_type="application/json")
 
 
@@ -54,6 +61,23 @@ def get_all_prizes(req):
     return render(req, 'show_prizes.html', {
         'prizes': dict(prizes)
     })
+
+
+def get_specify_prize(req):
+    # 取得奖品的详情
+    prize_id = req.POST.get('prize_id', False)
+    try:
+        prize = Prize.objects.get(pk=int(prize_id))
+    except:
+        prize = None
+    if prize:
+        return HttpResponse(json.dumps({"success": True, "prize": {"id": prize.id, "name": prize.name, "img": prize.img.url, "class":prize.prize_class.name},
+                                        "messages": '当前奖品已抽奖完毕, 详细请查看中奖名单'}),
+                            content_type="application/json")
+    else:
+        return HttpResponse(json.dumps({"success": False,
+                                        "messages": '不存在当前奖品'}),
+                            content_type="application/json")
 
 
 def lottery(req):
@@ -168,12 +192,14 @@ def get_winner_users(req):
 
 
 def reset_all(req):
+    # 重置所有中奖结果
     obj_redis.flushdb()
     return HttpResponse(json.dumps({"success": True, "messages": '重置所有获奖结果!'}),
                         content_type="application/json")
 
 
 def reset_by_prize(req):
+    # 重置某奖品 中奖结果
     prize_id = req.POST.get('prize_id', False)
     if prize_id:
         obj_redis.delRedis(int(prize_id))
@@ -181,4 +207,77 @@ def reset_by_prize(req):
                             content_type="application/json")
     else:
         return HttpResponse(json.dumps({"success": False, "messages": '当前奖品不存在!'}),
+                            content_type="application/json")
+
+
+@csrf_exempt
+def get_all_losers(req):
+    # 取得所有未获奖用户
+    all_user_ids = set(User.objects.values_list('id', flat=True).distinct())  # 参与抽奖用户ID
+    all_winner_ids = obj_redis.get_all('all_winner_ids')  # 所有已中奖人(ID)
+    all_user_ids = list(filter(lambda x: x not in all_winner_ids, all_user_ids))  # 排除所有已中奖用户
+    page = int(req.GET.get('page', 1))
+    limit = int(req.GET.get('limit', 10))
+    name = req.GET.get('key[name]', False)
+    group = req.GET.get('key[group]', False)
+    losers = []
+    for user_id in all_user_ids:
+        try:
+            user = User.objects.get(pk=int(user_id))
+        except:
+            user = None
+        if user:
+            if name and group:
+                if name in user.name or group in user.group:
+                    losers.append({'id': user.id, 'name': user.name, 'group': user.group})
+            else:
+                losers.append({'id': user.id, 'name': user.name, 'group': user.group})
+    start_index = (page - 1) * limit
+    end_index = page * limit
+    page_losers = losers[start_index:end_index]
+    return HttpResponse(json.dumps({"code": 0, "count": len(losers), "data": page_losers, "msg": '所有未获奖用户'}),
+                        content_type="application/json")
+
+
+def can_lottery(req):
+    # 是否可以进行抽奖
+    prize_id = req.POST.get('prize_id', False)
+    try:
+        prize = Prize.objects.get(pk=int(prize_id))
+    except:
+        prize = None
+
+    if prize:
+        winner_ids = obj_redis.get_all(prize.id)  # 当前奖项已中奖用户(ID)
+        win_number = prize.number  # 可中奖人数
+        if len(winner_ids) >= win_number:
+            # 当前奖项已进行抽奖且已抽取所有可中奖用户
+            return HttpResponse(json.dumps({"success": False, "messages": '当前奖品已抽奖完毕, 详细请查看中奖名单'}),
+                                content_type="application/json")
+        else:
+            return HttpResponse(json.dumps({"success": True, "messages": '当前奖品可进行抽奖'}),
+                                content_type="application/json")
+
+    else:
+        return HttpResponse(json.dumps({"success": False, "messages": '当前奖品不存在'}),
+                            content_type="application/json")
+
+
+def other_lottery(req):
+    user_number = req.POST.get('user_number', False)
+    winners = []
+    if user_number:
+        all_user_ids = set(User.objects.values_list('id', flat=True).distinct())  # 参与抽奖用户ID
+        for _ in range(int(user_number)):
+            winner_id = lottery_method(all_user_ids)
+            try:
+                user = User.objects.get(pk=int(winner_id))
+            except:
+                user = None
+            if user:
+                winners.append({'id': user.id, 'name': user.name, 'group': user.group})
+        return HttpResponse(json.dumps({"success": True, "winners": winners, "messages": '成功抽奖!'}),
+                            content_type="application/json")
+    else:
+        return HttpResponse(json.dumps({"success": False, "winners": winners, "messages": '请输入抽奖人数'}),
                             content_type="application/json")

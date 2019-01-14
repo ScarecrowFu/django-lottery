@@ -63,24 +63,69 @@
         </div>
     {% endfor %}
 
-
-
 {% endfor %}
+
+<fieldset class="layui-elem-field layui-field-title site-demo-button" style="margin-top: 30px;">
+    <legend>未中奖名单</legend>
+</fieldset>
+
+<div class="losersTable">
+    搜索：
+    <div class="layui-inline">
+        <input class="layui-input" name="id" id="losersReload" autocomplete="off">
+    </div>
+    <button class="layui-btn" data-type="reload">搜索</button>
+</div>
+
+<table class="layui-hide" id="losers_table" lay-filter="user"></table>
+
+
 <script>         var csrftoken = '{{ csrf_token }}';     </script>
 <script type="text/javascript" src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'layui-v2.4.5/layui/layui.js' %}"></script>
 
 <script>
-    layui.use(['layer', 'flow'], function(){
+    layui.use(['layer', 'flow', 'table'], function(){
         var flow = layui.flow;
-         var layer = layui.layer;
-{#        {% for class, prize in prizes.items %}#}
-{#            //按屏加载图片#}
-{#            flow.lazyimg({#}
-{#                elem: '#LAY_{{ class }}'#}
-{#                ,scrollElem: '#LAY_demo3' //一般不用设置#}
-{#            });#}
-{#        {% endfor %}#}
+        var layer = layui.layer;
+        var table = layui.table;
+
+
+        //方法级渲染
+        table.render({
+            elem: '#losers_table'
+            ,url: '/get_all_losers/'
+            ,cols: [[
+                {field:'name', title: '名称'}
+                ,{field:'group', title: '部门'}
+            ]]
+            ,id: 'testReload'
+            ,page: true
+            ,height: 515
+        });
+
+        var $ = layui.$, active = {
+            reload: function(){
+                var losersReload = $('#losersReload');
+                //执行重载
+                table.reload('testReload', {
+                    page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    ,where: {
+                        key: {
+                            name: losersReload.val(),
+                            group: losersReload.val(),
+                        }
+                    }
+                });
+            }
+        };
+
+        $('.losersTable .layui-btn').on('click', function(){
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
 
         $( "#reset_by_prize" ).click(function() {
             var prize_id = $(this).data('id');
