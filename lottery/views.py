@@ -55,10 +55,6 @@ def get_all_prizes(req):
     prizes = defaultdict(list)
     for prize in Prize.objects.values('prize_class__name', 'name', 'img', 'number').order_by('prize_class'):
         prizes[prize['prize_class__name']].append({'name': prize['name'], 'img': '/media/' + prize['img'], 'number': prize['number']})
-    print(dict(prizes))
-    import json
-    with open('/tmp/data.json', 'w') as outfile:
-        json.dump(prizes, outfile, ensure_ascii=False)
     return render(req, 'show_prizes.html', {
         'prizes': dict(prizes)
     })
@@ -278,7 +274,9 @@ def other_lottery(req):
             except:
                 user = None
             if user:
-                winners.append({'id': user.id, 'name': user.name, 'group': user.group})
+                # 嘉宾不参与其他奖项的抽奖
+                if not user.guest:
+                    winners.append({'id': user.id, 'name': user.name, 'group': user.group})
         return HttpResponse(json.dumps({"success": True, "winners": winners, "messages": '成功抽奖!'}),
                             content_type="application/json")
     else:

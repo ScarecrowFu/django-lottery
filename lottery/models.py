@@ -8,6 +8,7 @@ class User(models.Model):
     name = models.CharField(max_length=255, verbose_name="姓名")
     group = models.CharField(max_length=255, null=True, blank=True, verbose_name="部门")
     weights = models.IntegerField(default=0, verbose_name="权重", help_text="权重为0-100, 权重越高, 中奖机会越高")
+    guest = models.BooleanField(default=False, verbose_name="是否为嘉宾", help_text="嘉宾不参与`其他`奖项的抽奖")
 
     def __str__(self):
         return self.name
