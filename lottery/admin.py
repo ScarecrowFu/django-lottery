@@ -36,7 +36,7 @@ class UserAdmin(ImportExportModelAdmin):
         return [f for f in formats if f().can_import()]
 
     resource_class = UserResource
-    list_display = ('name', 'group', 'weights', 'serial_number')
+    list_display = ('name', 'group', 'weights', 'guest')
     search_fields = ('serial_number', 'name', 'group', 'weights')
 
 
