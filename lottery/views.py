@@ -56,7 +56,7 @@ def get_all_prizes(req):
     for prize in Prize.objects.values('prize_class__name', 'name', 'img', 'number').order_by('prize_class'):
         prizes[prize['prize_class__name']].append({'name': prize['name'], 'img': '/media/' + prize['img'], 'number': prize['number']})
     import json
-    with open('data.json', 'w') as outfile:
+    with open('/tmp/data.json', 'w') as outfile:
         json.dump(prizes, outfile)
     return render(req, 'show_prizes.html', {
         'prizes': dict(prizes)

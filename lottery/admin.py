@@ -9,8 +9,8 @@ class UserResource(resources.ModelResource):
 
     class Meta:
         model = User
-        import_id_fields = ('serial_number', 'name', 'group',)
-        fields = ('serial_number', 'name', 'group', 'weights')
+        import_id_fields = ('serial_number', 'name', 'group', 'guest')
+        fields = ('serial_number', 'name', 'group', 'weights', 'guest')
 
 
 class UserAdmin(ImportExportModelAdmin):
