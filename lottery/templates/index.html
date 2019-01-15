@@ -69,27 +69,55 @@
     <button id="reset" name="reset" class="layui-btn layui-btn-xs layui-btn-normal">重置</button>
     <button data-method="prizes" class="layui-btn layui-btn-xs layui-btn-normal">查看所有奖品</button>
     <button data-method="lottery" class="layui-btn layui-btn-xs layui-btn-normal">中奖名单</button>
-    <button id="special_class"  data-method="special_class" class="layui-btn layui-btn-xs layui-btn-normal">特等奖规则</button>
+    {#    <button id="special_class"  data-method="special_class" class="layui-btn layui-btn-xs layui-btn-normal">特等奖规则</button>#}
+    <button id="music_switch"  data-method="music-on" class="layui-btn layui-btn-xs layui-btn-normal"><i id="music_icon" class="layui-icon layui-icon-pause"></i></button>
 
 </div>
 
 <div id="tools-2" class="tools-2">
     <div id="show_prize" class="layui-anim layui-anim-up layui-anim-rotate">
-        <img id="prize_img" style="height: 50%; width: 50%" src="">
+        <img id="prize_img" style="height: 60%; width: 70%" src="">
     </div>
 
     <div id="show_prize_font" class="layui-form-item">
         <div class="layui-inline">
             <div class="layui-input-inline">
-                <p id="prize_class_font" style="color: #FFDF85; font-size: large"></p>
-                <p id="prize_font" style="color: #FFDF85; font-size: large"></p>
+                <p id="prize_class_font" style="color: #FFDF85; font-size: x-large"></p>
+                <p id="prize_font" style="color: #FFDF85; font-size: x-large"></p>
             </div>
         </div>
     </div>
 </div>
 
+<audio id="music" autoplay="autoplay" loop="loop" preload src="{% static 'music.mp3' %}"></audio>
+<audio id="lottery_music"  loop="loop" preload src="{% static 'lottery.mp3' %}"></audio>
+
 <script type="text/javascript">
     $(function () {
+
+        //定义audio变量为音频播放控件ID
+        var audio = document.getElementById("music");
+        var lottery_audio = document.getElementById("lottery_music");
+        //定义一个变量status作为当前播放状态并赋值
+        var status = 1;
+        var lottery_status = 0;
+        //使音频默认自动播放
+        //$(document).ready(function(){
+        //    audio.play();
+        //});
+        //设置按钮点击事件
+        $("#music_switch").click(function(){
+            if (status>0) {
+                audio.pause();
+                $(this).html('<i class="layui-icon layui-icon-play"></i>');
+                status = 0;
+            }
+            else {
+                audio.play();
+                $(this).html('<i class="layui-icon layui-icon-pause"></i>');
+                status = 1;
+            }
+        });
 
         $(document).keypress(function (e) {
             if (e.keyCode === 27) {
@@ -366,6 +394,10 @@
                         async:false,//取消异步请求
                         success: function (response) {
                             if (response.success){
+                                lottery_audio.pause();
+                                if (status>0){
+                                    audio.play();
+                                }
                                 var winners = response.winners;
                                 console.log(winners);
                                 TagCanvas.SetSpeed('myCanvas', speed());
@@ -415,6 +447,10 @@
                     TagCanvas.SetSpeed('myCanvas', [5, 1]);
                     running = true;
                     that.text('停止');
+                    lottery_audio.play();
+                    if (status>0){
+                        audio.pause();
+                    }
                 }
 
             }else {
@@ -456,6 +492,10 @@
                         async:false,//取消异步请求
                         success: function (response) {
                             if (response.success){
+                                lottery_audio.pause();
+                                if (status>0){
+                                    audio.play();
+                                }
                                 var winners = response.winners;
                                 console.log(winners);
                                 TagCanvas.SetSpeed('myCanvas', speed());
@@ -505,6 +545,10 @@
                     TagCanvas.SetSpeed('myCanvas', [5, 1]);
                     running = true;
                     that.text('停止');
+                    lottery_audio.play();
+                    if (status>0){
+                        audio.pause();
+                    }
                 }
             }
 

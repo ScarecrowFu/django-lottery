@@ -80,7 +80,10 @@ obj_redis = OPRedis()
 
 
 def lottery_method(all_user_ids):
-    random.shuffle(list(all_user_ids))  # 打乱数组顺序
+    # print(all_user_ids)
+    random.shuffle(all_user_ids)  # 打乱数组顺序
+    # print(all_user_ids)
+    # print("====")
     # 生成抽奖用户
     all_users_with_weights = {}
     for user_id in all_user_ids:

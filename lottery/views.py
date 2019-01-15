@@ -161,7 +161,8 @@ def lottery(req):
                 print("中奖结果:")
                 print(winners)
                 print(len(winners))
-                random.shuffle(list(winners))  # 打乱获奖用户
+                random.shuffle(winners)  # 打乱获奖用户
+                print(winners)
                 return HttpResponse(json.dumps({"success": True, "winners": winners, "messages": '抽奖成功!恭喜中奖'}), content_type="application/json")
 
         else:
