@@ -49,14 +49,6 @@
     layui.use('flow', function(){
         var flow = layui.flow;
 
-        {% for class, prize in prizes.items %}
-            //按屏加载图片
-            flow.lazyimg({
-                elem: '#LAY_{{ class }}'
-                ,scrollElem: '#LAY_demo3' //一般不用设置，此处只是演示需要。
-            });
-        {% endfor %}
-
     });
 </script>
 
