@@ -266,11 +266,12 @@ def other_lottery(req):
     user_number = req.POST.get('user_number', False)
     winners = []
     if user_number:
-        all_user_ids = set(User.objects.values_list('id', flat=True).distinct())  # 参与抽奖用户ID
+        all_user_ids = list(User.objects.values_list('id', flat=True).distinct())  # 参与抽奖用户ID
         for _ in range(int(user_number)):
-            winner_id = lottery_method(all_user_ids)
             try:
+                winner_id = random.choice(all_user_ids)
                 user = User.objects.get(pk=int(winner_id))
+                all_user_ids.remove(winner_id)
             except:
                 user = None
             if user:
