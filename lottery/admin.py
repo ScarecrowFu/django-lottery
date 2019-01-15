@@ -2,6 +2,7 @@ from django.contrib import admin
 from lottery.models import User, Prize, PrizeClass
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
+from import_export.formats import base_formats
 
 
 class UserResource(resources.ModelResource):
@@ -13,6 +14,27 @@ class UserResource(resources.ModelResource):
 
 
 class UserAdmin(ImportExportModelAdmin):
+    # your normal stuff
+    def get_export_formats(self):
+        """
+        Returns available export formats.
+        """
+        formats = (
+            base_formats.CSV,
+            base_formats.XLS,
+        )
+        return [f for f in formats if f().can_export()]
+
+    def get_import_formats(self):
+        """
+        Returns available import formats.
+        """
+        formats = (
+            base_formats.CSV,
+            base_formats.XLS,
+        )
+        return [f for f in formats if f().can_import()]
+
     resource_class = UserResource
     list_display = ('name', 'group', 'weights', 'serial_number')
     search_fields = ('serial_number', 'name', 'group', 'weights')

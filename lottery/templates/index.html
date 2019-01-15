@@ -21,9 +21,15 @@
 <div id="main" class="wall"></div>
 <div id="result" class="result"></div>
 <div id="tools" class="tools">
-    <div class="layui-anim layui-anim-up"><button id="lottery" name="lottery" class="layui-btn layui-btn-lg layui-btn-danger layui-btn-radius" >抽奖</button></div>
+    <div class="layui-anim layui-anim-up layui-anim-rotate">
+        <button id="lottery" name="lottery" class="layui-btn layui-btn-lg layui-btn-danger layui-btn-radius" style="width: 50%;" >抽奖</button>
+        <div id="special_class" data-method="special_class" >
+            <span style="color: blue;">特等奖规则</span>
+        </div>
+    </div>
 
-    <br/><br/><br/><br/><br/><br/>
+
+    <br/><br/><br/>
     <form class="layui-form">
         <div class="layui-form-item">
             <div class="layui-inline">
@@ -65,22 +71,15 @@
 </div>
 
 <div id="tools-2" class="tools-2">
-    <div id="show_prize" class="layui-form-item">
-        <div class="layui-inline">
-            <label class="layui-form-label"><span style="color: yellow"></span></label>
-            <div class="layui-input-inline">
-                <img id="prize_img" style="height: 100%; width: 100%" src="">
-            </div>
-        </div>
+    <div id="show_prize" class="layui-anim layui-anim-up layui-anim-rotate">
+        <img id="prize_img" style="height: 50%; width: 50%" src="">
     </div>
 
     <div id="show_prize_font" class="layui-form-item">
         <div class="layui-inline">
-            <label class="layui-form-label"><span style="color: yellow"></span></label>
             <div class="layui-input-inline">
-                <p id="prize_class_font" style="color: #FFDF85; font-size: x-large"></p>
-                <br>
-                <p id="prize_font" style="color: #FFDF85; font-size: x-large"></p>
+                <p id="prize_class_font" style="color: #FFDF85; font-size: large"></p>
+                <p id="prize_font" style="color: #FFDF85; font-size: large"></p>
             </div>
         </div>
     </div>
@@ -138,6 +137,17 @@
                         ,moveType: 1 //拖拽模式，0或者1
                         ,content: '{% url 'get_all_prizes' %}'
                     });
+                }
+                ,special_class: function(){
+                    //配置一个透明的询问框
+                    layer.msg('<img style="height: 100%; width: 100%"  src="{% static 'img/special_class.jpg' %}">', {
+                        time: 20000, //20s后自动关闭
+                        area: ['80%', '80%'],
+                        shade: 0,
+                        btn: ['明白了']
+                    });
+                    {#console.log("special_class")#}
+                    {#$('#special_class-2').css('display', 'block').html('<img src="{% static 'img/special_class.jpg' %}">');#}
                 },
                 blue_theme: function(){
                     document.getElementById('main').style.backgroundImage="url({% static 'img/icon-wall.jpg' %})";
@@ -150,6 +160,11 @@
             };
 
             $('.layui-btn').on('click', function(){
+                var othis = $(this), method = othis.data('method');
+                active[method] ? active[method].call(this, othis) : '';
+            });
+
+            $('#special_class').on('click', function(){
                 var othis = $(this), method = othis.data('method');
                 active[method] ? active[method].call(this, othis) : '';
             });

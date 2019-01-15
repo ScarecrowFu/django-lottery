@@ -6,8 +6,6 @@ from collections import defaultdict
 from lottery.utils import obj_redis, lottery_method
 from django.views.decorators.csrf import csrf_exempt
 import random
-import numpy as np
-
 
 def index(req):
     # 首页初始化
@@ -126,6 +124,8 @@ def lottery(req):
                 for winner_user in prize.win_users.all():
                     if len(winner_ids) >= win_number:
                         break  # 大于可中奖人数, 停止添加中奖用户
+                    if winner_user.id in all_winner_ids:
+                        continue  # 用户已中奖
                     all_winner_ids.add(winner_user.id)
                     winner_ids.add(winner_user.id)
                     winners.append({'id': winner_user.id, 'name': winner_user.name, 'group': winner_user.group})
@@ -159,7 +159,7 @@ def lottery(req):
                 print("中奖结果:")
                 print(winners)
                 print(len(winners))
-
+                random.shuffle(list(winners))  # 打乱获奖用户
                 return HttpResponse(json.dumps({"success": True, "winners": winners, "messages": '抽奖成功!恭喜中奖'}), content_type="application/json")
 
         else:

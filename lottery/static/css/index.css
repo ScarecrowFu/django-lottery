@@ -106,9 +106,11 @@ button, html input[type=button], input[type=reset], input[type=submit] {
 }
 .tools-2 {
     position: absolute;
-    top: 100px;
+    top: 80px;
     right: 20px;
     text-align: center;
+    height: 50%;
+    width:25%;
 }
 .tools .pure-button {
     display: inline-block;
