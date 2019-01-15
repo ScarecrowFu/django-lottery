@@ -23,9 +23,9 @@
 <div id="tools" class="tools">
     <div class="layui-anim layui-anim-up layui-anim-rotate">
         <button id="lottery" name="lottery" class="layui-btn layui-btn-lg layui-btn-danger layui-btn-radius" style="width: 50%;" >抽奖</button>
-        <div id="special_class" data-method="special_class" >
-            <span style="color: blue;">特等奖规则</span>
-        </div>
+        {#        <div id="special_class" data-method="special_class" >#}
+        {#            <span style="color: blue;">特等奖规则</span>#}
+        {#        </div>#}
     </div>
 
 
@@ -65,9 +65,12 @@
 
     </form>
 
+    <a id="admin" name="admin" href="/admin/" target="_blank" class="layui-btn layui-btn-xs layui-btn-normal">管理后台</a>
     <button id="reset" name="reset" class="layui-btn layui-btn-xs layui-btn-normal">重置</button>
     <button data-method="prizes" class="layui-btn layui-btn-xs layui-btn-normal">查看所有奖品</button>
     <button data-method="lottery" class="layui-btn layui-btn-xs layui-btn-normal">中奖名单</button>
+    <button id="special_class"  data-method="special_class" class="layui-btn layui-btn-xs layui-btn-normal">特等奖规则</button>
+
 </div>
 
 <div id="tools-2" class="tools-2">
