@@ -53,12 +53,8 @@ def get_prize_by_class(req):
 def get_all_prizes(req):
     # 取得所有奖品
     prizes = defaultdict(list)
-    for prize in Prize.objects.values('prize_class__name', 'name', 'img', 'number').order_by('prize_class', 'name'):
+    for prize in Prize.objects.values('prize_class__name', 'name', 'img', 'number').order_by('prize_class'):
         prizes[prize['prize_class__name']].append({'name': prize['name'], 'img': '/media/' + prize['img'], 'number': prize['number']})
-    print(dict(prizes))
-    import json
-    with open('/tmp/data.json', 'w') as outfile:
-        json.dump(dict(prizes), outfile, ensure_ascii=False)
     return render(req, 'show_prizes.html', {
         'prizes': dict(prizes)
     })
