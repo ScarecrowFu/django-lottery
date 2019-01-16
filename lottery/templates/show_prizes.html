@@ -18,7 +18,7 @@
         img {
             width: 100px;
             height: 100px;
-            {#background-color: grey;#}
+        {#background-color: grey;#}
         }
         .caption {
             display: block;
@@ -27,7 +27,7 @@
 </head>
 <body>
 
-{% for class, prize in prizes.items %}
+{% for class, prize in special_prize.items %}
     <fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">
         <legend>{{ class }}</legend>
     </fieldset>
@@ -40,6 +40,23 @@
         {% endfor %}
 
     </div>
+{% endfor %}
+
+{% for class, prize in prizes.items %}
+    {% if class != '特等奖' %}
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px;">
+            <legend>{{ class }}</legend>
+        </fieldset>
+        <div id="LAY_{{ class }}">
+            {%  for p in prize %}
+                <div class="item">
+                    <img src="{{ p.img }}"/>
+                    <span class="caption">{{ p.name }} ({{ p.number }}人)</span>
+                </div>
+            {% endfor %}
+
+        </div>
+    {% endif %}
 {% endfor %}
 
 

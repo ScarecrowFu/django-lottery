@@ -25,7 +25,7 @@
         img {
             width: 100px;
             height: 100px;
-            background-color: grey;
+        {#background-color: grey;#}
         }
         .caption {
             display: inline-block;
@@ -35,34 +35,64 @@
 </head>
 <body>
 
-{% for class, prizes in winner_users.items %}
-    <fieldset class="layui-elem-field layui-field-title site-demo-button" style="margin-top: 30px;">
-        <legend>{{ class }}</legend>
-    </fieldset>
-    {%  for prize in prizes %}
-        <div class="site-demo-button" id="layerDemo" style="margin-bottom: 0;">
-            <blockquote class="layui-elem-quote layui-quote-nm">
-                <img src="{{ prize.img }}"/> {{ prize.name }}
-                {% if prize.users %}
-                    <button id="reset_by_prize" name="reset_by_prize" data-id="{{ prize.id }}" class="layui-btn layui-btn-danger layui-btn-radius layui-btn-sm ">重置中奖用户</button>
+{% for class, prizes in special_prize_winner_users.items %}
+        <fieldset class="layui-elem-field layui-field-title site-demo-button" style="margin-top: 30px;">
+            <legend>{{ class }}</legend>
+        </fieldset>
+        {%  for prize in prizes %}
+            <div class="site-demo-button" id="layerDemo" style="margin-bottom: 0;">
+                <blockquote class="layui-elem-quote layui-quote-nm">
+                    <img src="{{ prize.img }}"/> {{ prize.name }}
+                    {% if prize.users %}
+                        <button id="reset_by_prize" name="reset_by_prize" data-id="{{ prize.id }}" class="layui-btn layui-btn-danger layui-btn-radius layui-btn-sm ">重置中奖用户</button>
+                    {% else %}
+                        <button data-method="offset" class="layui-btn layui-btn-warm layui-btn-radius layui-btn-sm ">未抽奖</button>
+                    {% endif %}
+                </blockquote>
+                {% if not prize.users %}
+                    <br><br><br>
                 {% else %}
-                    <button data-method="offset" class="layui-btn layui-btn-warm layui-btn-radius layui-btn-sm ">未抽奖</button>
+                    {% for user in prize.users %}
+                        <button data-method="offset" class="layui-btn layui-btn-normal">{{ user.name }}({{ user.group }})</button>
+                        {% loop_counter forloop.counter 5  as br %}
+                        {{ br | safe }}
+                    {% endfor %}
                 {% endif %}
-            </blockquote>
-            {% if not prize.users %}
-                <br><br><br>
-            {% else %}
-                {% for user in prize.users %}
-                    <button data-method="offset" class="layui-btn layui-btn-normal">{{ user.name }}({{ user.group }})</button>
-                    {% loop_counter forloop.counter 5  as br %}
-                    {{ br | safe }}
-                {% endfor %}
-            {% endif %}
-            <!-- 示例-970 -->
-            <ins class="adsbygoogle" style="display:inline-block;width:100%;height:30px" data-ad-client="ca-pub-6111334333458862" data-ad-slot="3820120620"></ins>
-        </div>
-    {% endfor %}
+                <!-- 示例-970 -->
+                <ins class="adsbygoogle" style="display:inline-block;width:100%;height:30px" data-ad-client="ca-pub-6111334333458862" data-ad-slot="3820120620"></ins>
+            </div>
+        {% endfor %}
+{% endfor %}
 
+{% for class, prizes in winner_users.items %}
+    {%  if class != '特等奖' %}
+        <fieldset class="layui-elem-field layui-field-title site-demo-button" style="margin-top: 30px;">
+            <legend>{{ class }}</legend>
+        </fieldset>
+        {%  for prize in prizes %}
+            <div class="site-demo-button" id="layerDemo" style="margin-bottom: 0;">
+                <blockquote class="layui-elem-quote layui-quote-nm">
+                    <img src="{{ prize.img }}"/> {{ prize.name }}
+                    {% if prize.users %}
+                        <button id="reset_by_prize" name="reset_by_prize" data-id="{{ prize.id }}" class="layui-btn layui-btn-danger layui-btn-radius layui-btn-sm ">重置中奖用户</button>
+                    {% else %}
+                        <button data-method="offset" class="layui-btn layui-btn-warm layui-btn-radius layui-btn-sm ">未抽奖</button>
+                    {% endif %}
+                </blockquote>
+                {% if not prize.users %}
+                    <br><br><br>
+                {% else %}
+                    {% for user in prize.users %}
+                        <button data-method="offset" class="layui-btn layui-btn-normal">{{ user.name }}({{ user.group }})</button>
+                        {% loop_counter forloop.counter 5  as br %}
+                        {{ br | safe }}
+                    {% endfor %}
+                {% endif %}
+                <!-- 示例-970 -->
+                <ins class="adsbygoogle" style="display:inline-block;width:100%;height:30px" data-ad-client="ca-pub-6111334333458862" data-ad-slot="3820120620"></ins>
+            </div>
+        {% endfor %}
+    {% endif %}
 {% endfor %}
 
 <fieldset class="layui-elem-field layui-field-title site-demo-button" style="margin-top: 30px;">

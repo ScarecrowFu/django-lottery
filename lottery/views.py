@@ -1,10 +1,11 @@
 from django.shortcuts import render, HttpResponse
 import json
 from lottery.models import User, PrizeClass, Prize
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from lottery.utils import obj_redis, lottery_method
 from django.views.decorators.csrf import csrf_exempt
 import random
+
 
 def index(req):
     # 首页初始化
@@ -52,14 +53,18 @@ def get_prize_by_class(req):
 
 def get_all_prizes(req):
     # 取得所有奖品
-    prizes = defaultdict(list)
-    for prize in Prize.objects.values('prize_class__name', 'name', 'img', 'number').order_by('prize_class__name', 'name'):
-        prizes[prize['prize_class__name']].append({'name': prize['name'], 'img': '/media/' + prize['img'], 'number': prize['number']})
-    import json
-    with open('/tmp/data.json', 'w') as outfile:
-        json.dump(prizes, outfile, ensure_ascii=False)
+    prizes = OrderedDict()
+    special_prize = defaultdict(list)
+    for prize in Prize.objects.values('prize_class__name', 'name', 'img', 'number').order_by('prize_class__name', 'name').all():
+        if prize['prize_class__name'] == '特等奖':
+            special_prize[prize['prize_class__name']].append({'name': prize['name'], 'img': '/media/' + prize['img'], 'number': prize['number']})
+        try:
+            prizes[prize['prize_class__name']].append({'name': prize['name'], 'img': '/media/' + prize['img'], 'number': prize['number']})
+        except:
+            prizes[prize['prize_class__name']] = [{'name': prize['name'], 'img': '/media/' + prize['img'], 'number': prize['number']}]
     return render(req, 'show_prizes.html', {
-        'prizes': dict(prizes)
+        'prizes': dict(prizes),
+        'special_prize': dict(special_prize)
     })
 
 
@@ -174,8 +179,9 @@ def lottery(req):
 
 def get_winner_users(req):
     # 查看中奖名单
-    prizes = defaultdict(list)
-    for prize in Prize.objects.values('prize_class__name', 'name', 'img', 'number', 'id').order_by('prize_class__name', 'name'):
+    prizes = OrderedDict()
+    special_prize = defaultdict(list)
+    for prize in Prize.objects.values('prize_class__name', 'name', 'img', 'number', 'id').order_by('prize_class__name', 'name').all():
         prize_winner_user_ids = obj_redis.get_all(prize['id'])
         winner_users = []
         for prize_winner_user_id in prize_winner_user_ids:
@@ -185,12 +191,20 @@ def get_winner_users(req):
                 user = None
             if user:
                 winner_users.append({'name': user.name, 'group':user.group, 'id':user.id})
-        prizes[prize['prize_class__name']].append(
-            {'id': prize['id'], 'name': prize['name'], 'img': '/media/' + prize['img'],
-             'number': prize['number'], 'users': winner_users})
+        if prize['prize_class__name'] == '特等奖':
+            special_prize[prize['prize_class__name']].append({'id': prize['id'], 'name': prize['name'], 'img': '/media/' + prize['img'],
+                                                              'number': prize['number'], 'users': winner_users})
+        try:
+            prizes[prize['prize_class__name']].append(
+                {'id': prize['id'], 'name': prize['name'], 'img': '/media/' + prize['img'],
+                 'number': prize['number'], 'users': winner_users})
+        except:
+            prizes[prize['prize_class__name']] = [{'id': prize['id'], 'name': prize['name'], 'img': '/media/' + prize['img'],
+                                                   'number': prize['number'], 'users': winner_users}]
 
     return render(req, 'show_winner_users.html', {
-        'winner_users': dict(prizes)
+        'winner_users': dict(prizes),
+        'special_prize_winner_users': dict(special_prize)
     })
 
 
