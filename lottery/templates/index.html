@@ -359,7 +359,11 @@
             var total = winners.length;
             var ret = [];
             for(var i = 0; i < total; i++){
-                ret.push(winners[i].name + '<br/>' + winners[i].group);
+                if (winners[i].group) {
+                    ret.push(winners[i].name + '<br/>' + winners[i].group);
+                } else {
+                    ret.push(winners[i].name + '<br/>' + '&nbsp;');
+                }
             }
             console.log('ret')
             console.log(ret)

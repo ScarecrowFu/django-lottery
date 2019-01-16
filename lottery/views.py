@@ -53,7 +53,7 @@ def get_prize_by_class(req):
 def get_all_prizes(req):
     # 取得所有奖品
     prizes = defaultdict(list)
-    for prize in Prize.objects.values('prize_class__name', 'name', 'img', 'number').order_by('prize_class'):
+    for prize in Prize.objects.values('prize_class__name', 'name', 'img', 'number').order_by('prize_class__name', 'name'):
         prizes[prize['prize_class__name']].append({'name': prize['name'], 'img': '/media/' + prize['img'], 'number': prize['number']})
     import json
     with open('/tmp/data.json', 'w') as outfile:
@@ -175,7 +175,7 @@ def lottery(req):
 def get_winner_users(req):
     # 查看中奖名单
     prizes = defaultdict(list)
-    for prize in Prize.objects.values('prize_class__name', 'name', 'img', 'number', 'id').order_by('prize_class', 'name'):
+    for prize in Prize.objects.values('prize_class__name', 'name', 'img', 'number', 'id').order_by('prize_class__name', 'name'):
         prize_winner_user_ids = obj_redis.get_all(prize['id'])
         winner_users = []
         for prize_winner_user_id in prize_winner_user_ids:
