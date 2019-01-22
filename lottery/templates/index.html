@@ -119,7 +119,7 @@
             }
         });
 
-        $(document).keypress(function (e) {
+        $(document).keydown(function (e) {
             if (e.keyCode === 27) {
                 $('#result').css('display', 'none');
                 $('#main').removeClass('mask');

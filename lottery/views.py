@@ -53,6 +53,7 @@ def get_prize_by_class(req):
 
 def get_all_prizes(req):
     # 取得所有奖品
+    # TODO: 这里在服务器上排序有问题才如此编写,但仍未解决服务器上部署后排序出现的问题, 有点多此一举 , 后续可修改
     prizes = OrderedDict()
     special_prize = defaultdict(list)
     for prize in Prize.objects.values('prize_class__name', 'name', 'img', 'number').order_by('prize_class__name', 'name').all():
@@ -179,6 +180,7 @@ def lottery(req):
 
 def get_winner_users(req):
     # 查看中奖名单
+    # TODO: 这里在服务器上排序有问题才如此编写,但仍未解决服务器上部署后排序出现的问题, 有点多此一举 , 后续可修改
     prizes = OrderedDict()
     special_prize = defaultdict(list)
     for prize in Prize.objects.values('prize_class__name', 'name', 'img', 'number', 'id').order_by('prize_class__name', 'name').all():
