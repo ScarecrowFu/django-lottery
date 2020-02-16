@@ -1,6 +1,6 @@
 defusedxml==0.5.0
 diff-match-patch==20181111
-Django==2.1.5
+Django==2.2.10
 django-ckeditor==5.6.1
 django-import-export==1.1.0
 django-js-asset==1.1.0
