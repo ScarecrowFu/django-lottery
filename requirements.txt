@@ -10,7 +10,7 @@ odfpy==1.4.0
 openpyxl==2.5.12
 Pillow==5.4.1
 pytz==2018.9
-PyYAML==3.13
+PyYAML==5.4
 redis==3.0.1
 tablib==0.12.1
 unicodecsv==0.14.1
